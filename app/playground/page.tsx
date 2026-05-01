@@ -18,7 +18,7 @@ export default function Playground() {
       {/* Counter */}
       <div>
         <p>Count: {count}</p>
-        <button onClick={() => setCount(count + 1)}>Increase</button>
+        <button onClick={() => setCount(count + 3)}>Increase</button>
       </div>
 
       {/* Input */}

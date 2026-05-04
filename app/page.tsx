@@ -98,7 +98,11 @@ useEffect(() => {
         Go to Playground
       </Link>
     </div>
+    <div className="p-4">
+      <Link href="/tictactoe" className="text-blue-600 underline">
+        Play Tic Tac Toe
+      </Link> 
+      </div>
     </div>
-
   )
 }

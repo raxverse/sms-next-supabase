@@ -8,6 +8,9 @@ export default function Home() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState<any>(null)
+  const [statusMessage, setStatusMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [lastEmail, setLastEmail] = useState('')
 
   // 🔹 Check session on load
 useEffect(() => {
@@ -15,6 +18,7 @@ useEffect(() => {
   const getSession = async () => {
     const { data } = await supabase.auth.getSession()
     setUser(data.session?.user ?? null)
+    setLastEmail(data.session?.user?.email ?? '')
   }
 
   getSession()
@@ -24,46 +28,123 @@ useEffect(() => {
     (event, session) => {
       console.log('Auth event:', event)
       setUser(session?.user ?? null)
+      setLastEmail(session?.user?.email ?? lastEmail)
     }
   )
 
   return () => {
-    listener.subscription.unsubscribe()
+    if (listener?.subscription?.unsubscribe) {
+      listener.subscription.unsubscribe()
+    }
   }
 }, [])
 
   // 🔹 Signup
   const handleSignup = async () => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
+    setErrorMessage('')
+    setStatusMessage('')
 
-    if (error) {
-      console.error('Signup error:', error.message)
-    } else {
+    if (!email || !password) {
+      setErrorMessage('Please enter both email and password.')
+      return
+    }
+
+    if (user) {
+      setErrorMessage(`Already signed in as ${user.email}. Please log out first.`)
+      return
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+
+      if (error) {
+        console.error('Signup error:', error)
+        const rawMessage = typeof error.message === 'string' ? error.message : String(error)
+        const friendlyMessage = rawMessage.toLowerCase().includes('already registered')
+          ? 'This email is already registered. Please log in instead.'
+          : rawMessage
+        setErrorMessage(friendlyMessage)
+        return
+      }
+
       console.log('User created:', data)
+      setStatusMessage('Signup successful! Check your email for confirmation or log in now.')
+      setLastEmail(email)
+    } catch (unexpected) {
+      console.error('Unexpected signup error:', unexpected)
+      setErrorMessage('An unexpected error occurred during signup. Please try again.')
     }
   }
 
   // 🔹 Login
   const handleLogin = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    setErrorMessage('')
+    setStatusMessage('')
 
-    if (error) {
-      console.error('Login error:', error.message)
-    } else {
+    if (!email || !password) {
+      setErrorMessage('Please enter both email and password.')
+      return
+    }
+
+    if (user) {
+      setErrorMessage(`Already signed in as ${user.email}. Please log out first.`)
+      return
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        console.error('Login error:', error)
+        const rawMessage = typeof error.message === 'string' ? error.message : String(error)
+        setErrorMessage(rawMessage)
+        return
+      }
+
       console.log('Logged in:', data)
       setUser(data.user)
+      setStatusMessage(`Logged in as ${data.user?.email}`)
+      setLastEmail(data.user?.email ?? '')
+    } catch (unexpected) {
+      console.error('Unexpected login error:', unexpected)
+      setErrorMessage('An unexpected error occurred during login. Please try again.')
     }
   }
 
   // 🔹 Logout
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    setErrorMessage('')
+    setStatusMessage('')
+
+    if (!user) {
+      setStatusMessage('No user is currently signed in.')
+      return
+    }
+
+    const previousEmail = user.email
+    try {
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        console.error('Logout error:', error)
+        const rawMessage = typeof error.message === 'string' ? error.message : String(error)
+        setErrorMessage(rawMessage)
+        return
+      }
+
+      setUser(null)
+      setStatusMessage(`Logged out from ${previousEmail}`)
+      setLastEmail(previousEmail)
+    } catch (unexpected) {
+      console.error('Unexpected logout error:', unexpected)
+      setErrorMessage('An unexpected error occurred during logout. Please try again.')
+    }
   }
 
   return (
@@ -87,6 +168,7 @@ useEffect(() => {
               <label className="block text-sm font-semibold text-[#6f2736]">Email</label>
               <input
                 className="mt-2 w-full rounded-2xl border border-[#d9b9b0] bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-[#7b1d2f] focus:ring-2 focus:ring-[#7b1d2f]/10"
+                type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -125,11 +207,21 @@ useEffect(() => {
               </button>
             </div>
 
-            {user && (
-              <div className="rounded-2xl bg-[#faf1e8] px-4 py-4 text-sm text-[#5b1727] ring-1 ring-[#d9b9b0]/80">
-                Logged in as <span className="font-semibold">{user.email}</span>
+            {errorMessage ? (
+              <div className="rounded-2xl bg-[#ffe3e3] px-4 py-4 text-sm text-[#821717] ring-1 ring-[#f0b2b2]/80">
+                {errorMessage}
               </div>
-            )}
+            ) : null}
+
+            <div className="rounded-2xl bg-[#f5f7f2] px-4 py-4 text-sm text-[#33403f] ring-1 ring-[#d6dfda]/80">
+              {statusMessage
+                ? statusMessage
+                : user
+                ? `Logged in as ${user.email}`
+                : lastEmail
+                ? `Logged out from ${lastEmail}`
+                : 'Not signed in yet.'}
+            </div>
 
             <div className="grid gap-3 rounded-[1.75rem] bg-[#fff7ed] p-5 shadow-sm ring-1 ring-slate-200/70">
               <Link href="/playground" className="rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-[#7b1d2f] shadow-sm transition hover:bg-[#f8e7dc]/95">

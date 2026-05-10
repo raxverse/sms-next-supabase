@@ -165,7 +165,8 @@ useEffect(() => {
               Login or create an account to explore the app, then jump into the playground and Tic Tac Toe game to enjoy!.
             </p>
           </div>
-          <div className="grid gap-3 rounded-[1.75rem] bg-[#fff7ed] p-5 shadow-sm ring-1 ring-slate-200/70">
+          <div className="space-y-3 px-4 py-4 sm:px-8 sm:py-10">
+          <div className="grid gap-3 rounded-[1.75rem] bg-[#fff7ed] p-4 shadow-sm ring-1 ring-slate-200/70">
             <Link href="/playground" className="rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-[#7b1d2f] shadow-sm transition hover:bg-[#f8e7dc]/95">
               Go to Playground
             </Link>
@@ -178,9 +179,7 @@ useEffect(() => {
               </Link>
             ) : null}
           </div>
-
-          <div className="space-y-4 px-4 py-6 sm:px-8 sm:py-10">
-            <div className="rounded-[1.75rem] bg-[#fff7ed] p-4 shadow-sm ring-1 ring-slate-200/70">
+          <div className="rounded-[1.75rem] bg-[#fff7ed] p-4 shadow-sm ring-1 ring-slate-200/70">
               <label className="block text-sm font-semibold text-[#6f2736]">Email</label>
               <input
                 className="mt-2 w-full rounded-2xl border border-[#d9b9b0] bg-white px-2 py-3 text-slate-900 shadow-sm outline-none transition focus:border-[#7b1d2f] focus:ring-2 focus:ring-[#7b1d2f]/10"

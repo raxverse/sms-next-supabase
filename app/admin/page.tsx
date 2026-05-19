@@ -319,22 +319,6 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                className="rounded-2xl bg-[#7b1d2f] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#7b1d2f]/20 transition hover:bg-[#931f38]"
-                onClick={() => router.push('/')}
-              >
-                Back to Home
-              </button>
-              <button
-                className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#7b1d2f] shadow-sm transition hover:bg-[#f8e7dc]/95"
-                onClick={() => router.push('/playground')}
-              >
-                Go to Playground
-              </button>
-            </div>
-
             {errorMessage ? (
               <div className="rounded-2xl bg-[#ffe3e3] px-4 py-4 text-sm text-[#821717] ring-1 ring-[#f0b2b2]/80">
                 {errorMessage}

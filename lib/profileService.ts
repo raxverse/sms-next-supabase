@@ -26,11 +26,10 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
     .select()
     .single()
 
-  if (error) {
-    console.error('Error updating profile:', error)
-    throw error
-  }
-
+    if (error) {
+      console.error('Error updating profile:', error)
+      throw error
+    }
   return data
 }
 

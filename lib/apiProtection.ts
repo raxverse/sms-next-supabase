@@ -16,14 +16,10 @@ export async function getAuthenticatedUser(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
       {
-        cookies: {
+       cookies: {
           getAll() {
-            return request.cookies.getSetCookie().map((cookie) => {
-              const [name, ...rest] = cookie.split('=')
-              const value = rest.join('=')
-              return { name, value }
-            })
-          },
+            return request.cookies.getAll()
+           },
         },
       }
     )

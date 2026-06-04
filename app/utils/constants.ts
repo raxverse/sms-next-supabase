@@ -9,6 +9,8 @@ import {
   FileText,
   Settings,
   IndianRupee,
+  School,
+  User,
 } from "lucide-react";
 
 export const APP_COLORS = {
@@ -28,31 +30,33 @@ export const SIDEBAR_MENU_SECTIONS = [
   {
     title: "ACADEMIC MANAGEMENT",
     items: [
-      { icon: Calendar, label: "Sessions" },
-      { icon: ClipboardList, label: "Classes" },
-      { icon: ClipboardList, label: "Sections" },
-      { icon: ClipboardList, label: "Subjects" },
+      { icon: School, label: "Schools", href: "/admin/schools" },
+      { icon: Calendar, label: "Sessions", href: "/admin/sessions" },
+      { icon: ClipboardList, label: "Classes", href: "/admin/classes" },
+      { icon: ClipboardList, label: "Sections", href: "/admin/sections" },
+      { icon: ClipboardList, label: "Subjects", href: "/admin/subjects" },
+      { icon: User, label: "Teachers", href: "/admin/teachers" },
     ],
   },
   {
     title: "STUDENT MANAGEMENT",
     items: [
-      { icon: Users, label: "Admissions" },
-      { icon: GraduationCap, label: "Students" },
+      { icon: Users, label: "Admissions", href: "/admin/admissions" },
+      { icon: GraduationCap, label: "Students", href: "/admin/students" },
     ],
   },
   {
     title: "STAFF MANAGEMENT",
     items: [
-      { icon: Users, label: "Teachers" },
-      { icon: Users, label: "Staff" },
+      { icon: Users, label: "Teachers", href: "/admin/teachers" },
+      { icon: Users, label: "Staff", href: "/admin/staff" },
     ],
   },
   {
     title: "FEE MANAGEMENT",
     items: [
-      { icon: IndianRupee, label: "Fee Structure" },
-      { icon: IndianRupee, label: "Collection" },
+      { icon: IndianRupee, label: "Fee Structure", href: "/admin/fee-structure" },
+      { icon: IndianRupee, label: "Collection", href: "/admin/fee-collection" },
     ],
   },
 ];

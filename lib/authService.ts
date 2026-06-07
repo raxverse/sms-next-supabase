@@ -33,7 +33,7 @@ export class AuthService {
       const userId = authData.user.id;
 
       // 2. Create user profile
-      const { error: profileError } = await supabase.from('user_profiles').insert({
+      const { error: profileError } = await supabase.from('profiles').insert({
         id: userId,
         email,
         first_name: firstName,
@@ -148,7 +148,7 @@ export class AuthService {
   static async deactivateUser(userId: string): Promise<{ error: any }> {
     try {
       const { error: updateError } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .update({ is_active: false })
         .eq('id', userId);
 
@@ -185,7 +185,7 @@ export class AuthService {
   static async activateUser(userId: string): Promise<{ error: any }> {
     try {
       const { error: updateError } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .update({ is_active: true })
         .eq('id', userId);
 
@@ -221,10 +221,10 @@ export class AuthService {
    */
   static async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<{ data: any; error: any }> {
     try {
-      const { data, error } = await supabase.from('user_profiles').update(updates).eq('id', userId).select();
+      const { data, error } = await supabase.from('profiles').update(updates).eq('id', userId).select();
 
       if (!error) {
-        await this.createAuditLog(userId, 'PROFILE_UPDATED', 'user_profiles', userId, null, updates);
+        await this.createAuditLog(userId, 'PROFILE_UPDATED', '  profiles', userId, null, updates);
         AuthorizationService.invalidateUserCache(userId);
       }
 
@@ -255,7 +255,7 @@ export class AuthService {
   static async getUserWithContext(userId: string): Promise<AuthUser | null> {
     try {
       const { data: profile, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();

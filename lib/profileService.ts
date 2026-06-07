@@ -5,7 +5,7 @@ export type { UserProfile }
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await supabase
-    .from('user_profiles')
+    .from('profiles')
     .select('*')
     .eq('id', userId)
     .single()
@@ -20,7 +20,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
 export async function updateUserProfile(userId: string, updates: Partial<UserProfile>) {
   const { data, error } = await supabase
-    .from('user_profiles')
+    .from('profiles')
     .update(updates)
     .eq('id', userId)
     .select()
@@ -35,7 +35,7 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
 
 export async function createUserProfile(userId: string, email: string, profile?: Partial<UserProfile>) {
   const { data, error } = await supabase
-    .from('user_profiles')
+    .from('profiles')
     .insert([
       {
         id: userId,

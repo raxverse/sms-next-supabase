@@ -122,18 +122,29 @@ export class AuthorizationService {
     }
 
     // Teachers can access students in their classes
-    if (this.hasAnyRole(user, ['teacher', 'classteacher'])) {
-      const { data: assignment, error } = await supabase
-        .from('student_enrollments')
-        .select('se.id')
-        .from('student_enrollments as se')
-        .join('teacher_class_assignments as tca', 'tca.session_class_section_id = se.session_class_section_id')
-        .eq('se.student_id', studentId)
-        .eq('tca.user_id', user.id)
-        .single();
+if (this.hasAnyRole(user, ['teacher', 'classteacher'])) {
+  
+  // Step 1: Pehle pata karo ki Student kis class/section mein padhta hai
+  const { data: enrollment, error: enrollError } = await supabase
+    .from('student_enrollments')
+    .select('session_class_section_id')
+    .eq('student_id', studentId)
+    .eq('is_active', true) // Hamesha active enrollment check karein
+    .maybeSingle();
 
-      return !error && !!assignment;
-    }
+  if (enrollError || !enrollment) return false;
+
+  // Step 2: Check karo ki kya yeh Teacher us class/section ko padhata hai?
+  const { data: assignment, error: assignError } = await supabase
+    .from('teacher_class_assignments')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('session_class_section_id', enrollment.session_class_section_id)
+    .maybeSingle();
+
+  // Agar assignment mil gaya, matlab teacher padhata hai (true return hoga)
+  return !assignError && !!assignment;
+}
 
     return false;
   }
@@ -291,16 +302,19 @@ export class AuthorizationService {
   /**
    * Get school info for user
    */
-  static async getUserSchool(userId: string): Promise<School | null> {
+static async getUserSchool(userId: string): Promise<School | null> {
     const { data, error } = await supabase
-      .from('user_profiles')
-      .select('school:schools(*)')
-      .eq('id', userId)
+      .from('schools')
+      // !inner ka matlab hai: Wahi school do jiska profile se link ho
+      .select('*, profiles!inner(id)') 
+      .eq('profiles.id', userId)
       .single();
 
-    if (error || !data?.school) return null;
-    return data.school;
-  }
+    if (error || !data) return null;
+
+    // Yahan TypeScript bilkul rotega nahi kyunki main query 'schools' table ki hi hai!
+    return data as School; 
+}
 
   /**
    * Build complete auth user with all RBAC context

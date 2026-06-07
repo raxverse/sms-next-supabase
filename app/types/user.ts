@@ -11,3 +11,15 @@ export interface UserProfile {
   created_at: string
   updated_at: string
 }
+
+export interface Student {
+  id: string;
+  profile_id?: string;
+  admission_number: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  student_id: string;
+  date: string;
+}

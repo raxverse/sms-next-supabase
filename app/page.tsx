@@ -1,20 +1,40 @@
-import Link from "next/link";
+// app/page.tsx
+import React from 'react';
+import AuthForm from '@/app/components/AuthForm';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#f8f1e7] px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-2xl">
-        <section className="overflow-hidden rounded-[2rem] bg-white/95 shadow-[0_20px_80px_rgba(88,28,39,0.18)] backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-[#7b1d2f] via-[#8f2438] to-[#5b1220] px-4 py-6 text-white sm:px-8">
-            <h1 className="text-4xl font-bold mb-4">Project Playground</h1> 
-            <p className="text-lg mb-4">This is the main page of the app.</p>
-            <p className="text-lg mb-4">Use the navigation links above to explore the different sections of the app.</p>
-            <Link href="https://colab.research.google.com/drive/1M6UQUSGW2--qz08KHxWclTbXnINhKyVX?usp=sharing" className="inline-block mt-4 rounded-2xl bg-[#7b1d2f] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#931f38]">
-              Python Notebook
-            </Link>
-          </div>
-        </section>
+    <main className="flex min-h-screen bg-[#f8f1e7]">
+      
+      {/* =========================================
+          LEFT SIDE: Banner (62%)
+          ========================================= */}
+      <div className="hidden lg:flex lg:w-[62%] relative bg-[#7b1d2f]">
+        
+        {/* Yahan apni pasand ki school/campus photo daal sakte hain */}
+        <img
+          src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2000" 
+          alt="Campus Background"
+          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-multiply"
+        />
+        
+        <div className="relative z-10 flex flex-col justify-center px-16 text-white w-full bg-gradient-to-r from-black/50 to-transparent">
+          <h1 className="text-5xl font-extrabold mb-4 text-[#ffe8d1]">
+            Empowering Education.
+          </h1>
+          <p className="text-xl max-w-2xl text-gray-200">
+            A comprehensive School Management System designed to streamline administration, connect parents, and empower teachers.
+          </p>
+        </div>
       </div>
+
+      {/* =========================================
+          RIGHT SIDE: Auth Form (38%)
+          ========================================= */}
+      <div className="flex flex-col justify-center items-center w-full lg:w-[38%] p-4 sm:p-8 z-20 overflow-y-auto">
+        <AuthForm />
+      </div>
+      
     </main>
-  )
+  );
 }

@@ -1,17 +1,19 @@
-// hooks/useAuthLogic.ts
-
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 
 export function useAuthLogic() {
+  const [firstname, setFirstname] = useState('')
+  const [lastname, setLastname] = useState('')
+  const [mobile, setMobile] = useState('')
+  const [role, setRole] = useState('Parent')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState<any>(null)
   const [statusMessage, setStatusMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [lastEmail, setLastEmail] = useState('')
-  const [mode, setMode] = useState<'choice' | 'login' | 'signup'>('choice')
+  const [mode, setMode] = useState<'login' | 'signup'>('login')
   const router = useRouter()
 
   // 🔹 Check session on load
@@ -64,8 +66,10 @@ export function useAuthLogic() {
         // Yahan database trigger ke liye default meta_data bhej rahe hain
         options: {
           data: {
-            first_name: 'User', 
-            role: 'Parent' 
+            first_name: firstname?.trim() || 'User',
+            last_name: lastname?.trim() || 'User',
+            mobile: mobile?.trim() || '',
+            role: role || 'Parent'
           }
         }
       })
@@ -160,6 +164,10 @@ export function useAuthLogic() {
 
   // UI ko jo bhi logic aur variables chahiye wo yahan se return honge
   return {
+    firstname, setFirstname,
+    lastname, setLastname,
+    mobile, setMobile,
+    role, setRole,
     email, setEmail,
     password, setPassword,
     user,

@@ -3,7 +3,7 @@
 import { Video as LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {
-  icon?: LucideIcon;
+  icon?: typeof LucideIcon;
   title: string;
   description?: string;
   action?: {

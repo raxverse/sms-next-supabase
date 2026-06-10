@@ -17,33 +17,28 @@ export const SIDEBAR_MENU_SECTIONS: SidebarMenuSection[] = [
   {
     title: "ACADEMIC MANAGEMENT",
     items: [
-      { icon: School, label: "Schools", href: "/admin/schools" },
-      { icon: Calendar, label: "Sessions", href: "/admin/sessions" },
-      { icon: ClipboardList, label: "Classes", href: "/admin/classes" },
-      { icon: ClipboardList, label: "Sections", href: "/admin/sections" },
-      { icon: BookOpen, label: "Subjects", href: "/admin/subjects" },
-      { icon: User, label: "Teachers", href: "/admin/teachers" },
+      { icon: School, label: "Schools", href: "/admin/academic/schools" },
+      { icon: Calendar, label: "Sessions", href: "/admin/academic/sessions" },
+      { icon: ClipboardList, label: "Classes", href: "/admin/academic/classes" },
+      { icon: BookOpen, label: "Exams", href: "/admin/exams" },
     ],
   },
   {
     title: "STUDENT MANAGEMENT",
     items: [
-      { icon: Users, label: "Admissions", href: "/admin/admissions" },
       { icon: GraduationCap, label: "Students", href: "/admin/students" },
     ],
   },
   {
     title: "STAFF MANAGEMENT",
     items: [
-      { icon: User, label: "Teachers", href: "/admin/teachers" },
       { icon: Users, label: "Staff", href: "/admin/staff" },
     ],
   },
   {
     title: "FEE MANAGEMENT",
     items: [
-      { icon: CreditCard, label: "Fee Structure", href: "/admin/fee-structure" },
-      { icon: IndianRupee, label: "Collection", href: "/admin/fee-collection" },
+      { icon: IndianRupee, label: "Fees", href: "/admin/fees" },
     ],
   },
 ];

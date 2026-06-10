@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Hop as Home, Settings, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { Hop as Home, Settings, ChevronRight, Menu, X } from "lucide-react";
 import { SIDEBAR_MENU_SECTIONS } from "@/app/utils/constants";
 
 interface SidebarNavItem {
@@ -15,9 +16,10 @@ interface SidebarSectionProps {
   title: string;
   items: SidebarNavItem[];
   activePath: string;
+  onItemClick?: () => void;
 }
 
-function SidebarSection({ title, items, activePath }: SidebarSectionProps) {
+function SidebarSection({ title, items, activePath, onItemClick }: SidebarSectionProps) {
   return (
     <div className="mb-6">
       <h3 className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/50">
@@ -41,6 +43,7 @@ function SidebarSection({ title, items, activePath }: SidebarSectionProps) {
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                 }
               `}
+              onClick={onItemClick}
             >
               <Icon
                 size={18}
@@ -63,12 +66,13 @@ function SidebarSection({ title, items, activePath }: SidebarSectionProps) {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
-  return (
-    <aside className="w-60 min-h-screen flex flex-col bg-gradient-to-b from-[var(--color-primary)] via-[#6B101C] to-[#4A0A12]">
+  const sidebarContent = (
+    <>
       {/* Logo Section */}
       <div className="flex-shrink-0 p-6 border-b border-white/10">
-        <Link href="/admin" className="flex flex-col gap-1">
+        <Link href="/admin" className="flex flex-col gap-1" onClick={() => setIsOpen(false)}>
           <h1 className="text-xl font-bold text-white tracking-tight">
             Playground
           </h1>
@@ -91,6 +95,7 @@ export default function Sidebar() {
                   : "bg-white/10 text-white hover:bg-white/15"
               }
             `}
+            onClick={() => setIsOpen(false)}
           >
             <Home
               size={18}
@@ -118,6 +123,7 @@ export default function Sidebar() {
               icon: item.icon,
             }))}
             activePath={pathname}
+            onItemClick={() => setIsOpen(false)}
           />
         ))}
       </nav>
@@ -135,6 +141,7 @@ export default function Sidebar() {
                 : "text-white/70 hover:bg-white/10 hover:text-white"
             }
           `}
+          onClick={() => setIsOpen(false)}
         >
           <Settings
             size={18}
@@ -150,6 +157,40 @@ export default function Sidebar() {
           <span>Settings</span>
         </Link>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white border border-[var(--input-border)] lg:hidden"
+      >
+        {isOpen ? (
+          <X size={24} className="text-[var(--text-color)]" />
+        ) : (
+          <Menu size={24} className="text-[var(--text-color)]" />
+        )}
+      </button>
+
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-40 w-60 h-screen flex flex-col bg-gradient-to-b from-[var(--color-primary)] via-[#6B101C] to-[#4A0A12]
+        transform transition-transform duration-300 ease-in-out
+        lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

@@ -130,3 +130,5 @@ export const RECENT_ACTIVITIES_DATA: Activity[] = [
   { id: "3", title: "Result Published", time: "Yesterday" },
   { id: "4", title: "TC Generated", time: "Yesterday" },
 ];
+
+

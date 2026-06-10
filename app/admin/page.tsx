@@ -13,6 +13,7 @@ import {
   School,
   TrendingUp,
   AlertCircle,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -34,16 +35,16 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-[var(--primary)] to-[#8f2438] rounded-xl p-6 text-white">
-        <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
-        <p className="text-white/80">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 text-white shadow-lg">
+        <h1 className="text-4xl font-bold mb-2">Welcome back!</h1>
+        <p className="text-blue-100 text-lg">
           Here&apos;s your school management dashboard overview
         </p>
       </div>
 
       {/* Stats Grid */}
       <div>
-        <h2 className="text-xl font-bold text-[var(--text-color)] mb-4">
+        <h2 className="text-2xl font-bold text-slate-900 mb-4">
           Key Metrics
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -70,7 +71,7 @@ export default function DashboardPage() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Left Column - Pending Actions */}
         <div className="lg:col-span-2">
-          <h2 className="text-xl font-bold text-[var(--text-color)] mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
             Quick Actions
           </h2>
           {actionsLoading ? (
@@ -81,22 +82,23 @@ export default function DashboardPage() {
                 <Link
                   key={action.id}
                   href="#"
-                  className="p-4 rounded-lg bg-[var(--input-bg)] border border-[var(--input-border)] hover:border-[var(--primary)] hover:bg-white transition-all group"
+                  className="p-4 rounded-lg bg-white border border-slate-200 hover:shadow-md hover:border-blue-300 transition-all group"
                 >
                   <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-semibold text-[var(--text-color)]">
+                    <div className="flex-1">
+                      <p className="font-semibold text-slate-900">
                         {action.name}
                       </p>
-                      <p className="text-sm text-[var(--text-color)]/60 mt-1">
+                      <p className="text-sm text-slate-600 mt-1">
                         {action.count} pending
                       </p>
                     </div>
                     {action.count > 0 && (
-                      <span className="px-2 py-1 rounded-full bg-[#e74c3c] text-white text-xs font-semibold">
+                      <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold ml-2">
                         {action.count}
                       </span>
                     )}
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors ml-2" />
                   </div>
                 </Link>
               ))}
@@ -106,7 +108,7 @@ export default function DashboardPage() {
 
         {/* Right Column - Recent Activities */}
         <div>
-          <h2 className="text-xl font-bold text-[var(--text-color)] mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
             Recent Activities
           </h2>
           {activitiesLoading ? (
@@ -116,19 +118,19 @@ export default function DashboardPage() {
               {activities.map((activity) => (
                 <div
                   key={activity.id}
-                  className="p-3 rounded-lg bg-[var(--input-bg)] border border-[var(--input-border)] text-sm"
+                  className="p-3 rounded-lg bg-white border border-slate-200 text-sm hover:shadow-sm transition-shadow"
                 >
-                  <p className="font-medium text-[var(--text-color)]">
+                  <p className="font-medium text-slate-900">
                     {activity.title}
                   </p>
-                  <p className="text-xs text-[var(--text-color)]/60 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     {activity.time}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-[var(--text-color)]/60">
+            <div className="text-center py-8 text-slate-400">
               <AlertCircle size={24} className="mx-auto mb-2 opacity-50" />
               <p className="text-sm">No activities yet</p>
             </div>

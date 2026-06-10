@@ -41,6 +41,33 @@ const mockExams: Exam[] = [
     totalMarks: 100,
     status: "pending",
   },
+  {
+    id: "4",
+    name: "Mid-Term 2024",
+    class: "IX-A",
+    subject: "Mathematics",
+    date: "July 10, 2024",
+    totalMarks: 80,
+    status: "completed",
+  },
+  {
+    id: "5",
+    name: "Final Exam 2024",
+    class: "X-B",
+    subject: "History",
+    date: "August 25, 2024",
+    totalMarks: 100,
+    status: "pending",
+  },
+  {
+    id: "6",
+    name: "Mid-Term 2024",
+    class: "X-C",
+    subject: "Geography",
+    date: "July 12, 2024",
+    totalMarks: 100,
+    status: "completed",
+  },
 ];
 
 export default function ExamsPage() {

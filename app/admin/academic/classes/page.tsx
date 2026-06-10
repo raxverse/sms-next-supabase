@@ -37,6 +37,30 @@ const mockClasses: Class[] = [
     students: 48,
     status: "active",
   },
+  {
+    id: "4",
+    name: "Class IX",
+    section: "B",
+    teacher: "Ms. Verma",
+    students: 46,
+    status: "active",
+  },
+  {
+    id: "5",
+    name: "Class X",
+    section: "C",
+    teacher: "Dr. Patel",
+    students: 41,
+    status: "active",
+  },
+  {
+    id: "6",
+    name: "Class VIII",
+    section: "A",
+    teacher: "Mr. Kumar",
+    students: 50,
+    status: "inactive",
+  },
 ];
 
 export default function ClassesPage() {

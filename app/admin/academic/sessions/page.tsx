@@ -9,7 +9,7 @@ interface Session {
   year: string;
   startDate: string;
   endDate: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "completed";
   school: string;
 }
 
@@ -31,6 +31,24 @@ const mockSessions: Session[] = [
     endDate: "March 31, 2025",
     status: "active",
     school: "DPS Delhi",
+  },
+  {
+    id: "3",
+    name: "Session 2025-26",
+    year: "2025-26",
+    startDate: "April 1, 2025",
+    endDate: "March 31, 2026",
+    status: "inactive",
+    school: "DPS Delhi",
+  },
+  {
+    id: "4",
+    name: "Session 2024-25",
+    year: "2024-25",
+    startDate: "April 1, 2024",
+    endDate: "March 31, 2025",
+    status: "active",
+    school: "St. Xavier's School",
   },
 ];
 

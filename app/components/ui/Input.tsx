@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes } from "react";
-import { LucideIcon } from "lucide-react";
+import { Video as LucideIcon } from "lucide-react";
 
 /* Base Input */
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {

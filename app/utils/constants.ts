@@ -1,19 +1,4 @@
-import {
-  Home,
-  Calendar,
-  Users,
-  GraduationCap,
-  ClipboardList,
-  Bus,
-  MessageSquare,
-  FileText,
-  Settings,
-  IndianRupee,
-  School,
-  User,
-  BookOpen,
-  CreditCard,
-} from "lucide-react";
+import { Hop as Home, Calendar, Users, GraduationCap, ClipboardList, Bus, MessageSquare, FileText, Settings, IndianRupee, School, User, BookOpen, CreditCard } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 // Sidebar Menu Configuration

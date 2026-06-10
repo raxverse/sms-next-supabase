@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import Sidebar from './common/Sidebar';
 
 export default function Header({
   user,
@@ -42,15 +43,9 @@ export default function Header({
       </div>
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-[#e8d7ca] bg-white px-5 py-4 space-y-3 text-base">
-          <Link href="/" onClick={() => setOpen(!open)} className="block rounded-2xl px-4 py-3 font-semibold text-[#5b1220] transition-colors duration-200 hover:bg-[#f8e7dc]">Home</Link>
-          <Link href="/contact" onClick={() => setOpen(!open)} className="block rounded-2xl px-4 py-3 font-semibold text-[#5b1220] transition-colors duration-200 hover:bg-[#f8e7dc]">Contact</Link>
-          <Link href="/about" onClick={() => setOpen(!open)} className="block rounded-2xl px-4 py-3 font-semibold text-[#5b1220] transition-colors duration-200 hover:bg-[#f8e7dc]">About</Link>
-          <Link href="/practice" onClick={() => setOpen(!open)} className="block rounded-2xl px-4 py-3 font-semibold text-[#5b1220] transition-colors duration-200 hover:bg-[#f8e7dc]">Practice</Link> 
-          <Link href="/playground" onClick={() => setOpen(!open)} className="block rounded-2xl px-4 py-3 font-semibold text-[#5b1220] transition-colors duration-200 hover:bg-[#f8e7dc]">Playground</Link>
-          <Link href="/tictactoe" onClick={() => setOpen(!open)} className="block rounded-2xl px-4 py-3 font-semibold text-[#5b1220] transition-colors duration-200 hover:bg-[#f8e7dc]">Tic Tac Toe</Link>     
-        </div>
-      )}
+        <Sidebar/>
+        )
+      }
     </header>
   )
 }

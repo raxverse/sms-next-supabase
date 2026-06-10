@@ -23,7 +23,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="w-53 bg-gradient-to-b from-[#7A1421] to-[#4F0913] text-white min-h-screen flex flex-col"
+      className="w-53 bg-gradient-to-b from-[#7A1421] to-[#4F0913] text-white min-h-screen flex flex-col right"
       style={{
         backgroundImage: `linear-gradient(to bottom, ${APP_COLORS.primary}, #4F0913)`,
       }}

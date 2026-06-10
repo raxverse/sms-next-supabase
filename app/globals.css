@@ -1,19 +1,92 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------
+   1. THEME VARIABLES (Aapke Custom Colors)
+   --------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background & Text */
+  --bg-color: #faf7f5;       /* Ek halka warm background jo aapke theme par jachega */
+  --text-color: #1a1a1a;
+  
+  /* Primary Theme (Maroon) */
+  --primary: #7b1d2f;
+  --primary-hover: #931f38;
+  --primary-dark: #5b1220;
+  
+  /* Secondary Theme (Peach/Warm) */
+  --secondary: #e6bfa8;
+  --secondary-hover: #f2d2c2;
+  --secondary-text: #5d121f;
+  
+  /* Inputs */
+  --input-bg: #fff7ed;
+  --input-border: #d9b9b0;
+  --label-color: #6f2736;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: Arial, Helvetica, sans-serif;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------------------------------------------------
+   2. CUSTOM COMPONENTS (Aapke Design Elements)
+   --------------------------------------------------- */
+@layer components {
+  
+  /* Main Auth Card (Pura form ka dabba) */
+  .auth-card {
+    @apply overflow-hidden rounded-[2rem] bg-white/95 shadow-[0_20px_80px_rgba(88,28,39,0.18)] backdrop-blur-sm;
+  }
+
+  /* Card ka Upar wala Header (Gradient wala) */
+  .auth-header {
+    @apply bg-gradient-to-br from-[var(--primary)] via-[#8f2438] to-[var(--primary-dark)] px-4 py-6 text-white sm:px-8;
+  }
+
+  /* Input Box ke bahar wala dabba */
+  .input-group {
+    @apply rounded-[1.75rem] bg-[var(--input-bg)] p-4 shadow-sm ring-1 ring-slate-200/70;
+  }
+
+  /* Email, Password likha hua Label */
+  .input-label {
+    @apply block text-sm font-semibold text-[var(--label-color)];
+  }
+
+  /* Asli Input / Select tag */
+  .input-field {
+    @apply mt-2 w-full rounded-2xl border border-[var(--input-border)] bg-white px-2 py-3 text-slate-900 shadow-sm outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/10;
+  }
+
+  /* ---------------------------------------------------
+     3. BUTTONS
+     --------------------------------------------------- */
+  
+  /* Main Maroon Button (Login / Signup) */
+  .btn-primary {
+    @apply rounded-2xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#7b1d2f]/20 transition hover:bg-[var(--primary-hover)] flex items-center justify-center w-full;
+  }
+
+  /* Secondary Peach Button (Switch to Signup / Logout) */
+  .btn-secondary {
+    @apply rounded-2xl bg-[var(--secondary)] px-5 py-3 text-sm font-semibold text-[var(--secondary-text)] shadow-lg shadow-[#ad7b6c]/20 transition hover:bg-[var(--secondary-hover)] flex items-center justify-center w-full;
+  }
+
+  /* ---------------------------------------------------
+     4. ALERT MESSAGES
+     --------------------------------------------------- */
+  
+  /* Error Message wala dabba (Red) */
+  .alert-error {
+    @apply rounded-2xl bg-[#ffe3e3] px-4 py-4 text-sm text-[#821717] ring-1 ring-[#f0b2b2]/80;
+  }
+
+  /* Status/Info Message wala dabba (Greenish/Gray) */
+  .alert-info {
+    @apply rounded-2xl bg-[#f5f7f2] px-4 py-4 text-sm text-[#33403f] ring-1 ring-[#d6dfda]/80;
+  }
 }

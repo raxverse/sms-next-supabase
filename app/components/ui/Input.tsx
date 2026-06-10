@@ -8,8 +8,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   hint?: string;
-  leftIcon?: LucideIcon;
-  rightIcon?: LucideIcon;
+  leftIcon?: typeof LucideIcon;
+  rightIcon?: typeof LucideIcon;
   onRightIconClick?: () => void;
 }
 

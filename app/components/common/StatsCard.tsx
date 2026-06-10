@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { APP_COLORS } from "@/app/utils/constants";
 
 interface Props {
   title: string;
@@ -16,20 +15,17 @@ export default function StatsCard({
 }: Props) {
   return (
     <div className="bg-white rounded-2xl border p-2 shadow-sm hover:shadow-md transition">
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center text-[#7A1421]"
-        style={{ backgroundColor: APP_COLORS.primaryLight, color: APP_COLORS.primary }}
-      >
+      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--color-primary-light)] text-[var(--color-primary)]">
         {icon}
       </div>
 
-      <p className="text-gray-500 mt-4">{title}</p>
+      <p className="text-[var(--color-text-muted)] mt-4 text-sm">{title}</p>
 
-      <h3 className="text-2xl font-bold mt-2" style={{ color: APP_COLORS.darkAlt }}>
+      <h3 className="text-2xl font-bold mt-2 text-[var(--color-text)]">
         {value}
       </h3>
 
-      <p className="text-sm text-gray-400 mt-2">{subtitle}</p>
+      <p className="text-xs text-[var(--color-text-light)] mt-2">{subtitle}</p>
     </div>
   );
 }

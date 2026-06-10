@@ -41,6 +41,24 @@ const mockStaff: Staff[] = [
     email: "vikram.singh@school.com",
     status: "active",
   },
+  {
+    id: "4",
+    name: "Dr. Anita Verma",
+    employeeId: "EMP004",
+    position: "School Principal",
+    department: "Administration",
+    email: "anita.verma@school.com",
+    status: "active",
+  },
+  {
+    id: "5",
+    name: "Mr. Suresh Kumar",
+    employeeId: "EMP005",
+    position: "Physics Teacher",
+    department: "Academic",
+    email: "suresh.kumar@school.com",
+    status: "inactive",
+  },
 ];
 
 export default function StaffPage() {

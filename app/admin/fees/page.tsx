@@ -39,6 +39,32 @@ const mockFees: Fee[] = [
     dueDate: "May 31, 2024",
     status: "overdue",
   },
+  {
+    id: "4",
+    studentName: "Priya Kapoor",
+    class: "IX-A",
+    amount: 14000,
+    dueDate: "June 20, 2024",
+    status: "completed",
+    paidDate: "June 18, 2024",
+  },
+  {
+    id: "5",
+    studentName: "Vikram Kumar",
+    class: "X-C",
+    amount: 15000,
+    dueDate: "June 15, 2024",
+    status: "pending",
+  },
+  {
+    id: "6",
+    studentName: "Sneha Gupta",
+    class: "IX-B",
+    amount: 14000,
+    dueDate: "June 20, 2024",
+    status: "completed",
+    paidDate: "June 19, 2024",
+  },
 ];
 
 export default function FeesPage() {

@@ -12,8 +12,7 @@ interface School {
   students: number;
 }
 
-// Mock data
-const mockSchools: School[] = [
+ const mockSchools: School[] = [
   {
     id: "1",
     name: "Delhi Public School",

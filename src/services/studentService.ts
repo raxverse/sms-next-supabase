@@ -8,17 +8,28 @@ type Guardian = Tables<'guardians'>
 type GuardianInsert = TablesInsert<'guardians'>
 type StudentEnrollment = Tables<'student_enrollments'>
 type StudentEnrollmentInsert = TablesInsert<'student_enrollments'>
+type StudentQueryRow = Student & {
+  guardian: Guardian | null
+  school: { id: string; name: string } | null
+  student_enrollments?: Array<StudentEnrollment & {
+    session_class_sections?: {
+      id: string
+      classes?: { id: string; name: string } | null
+      sections?: { id: string; name: string } | null
+    } | null
+  }> | null
+}
 
 export interface StudentWithDetails extends Student {
-  guardian?: Guardian
-  enrollment?: StudentEnrollment & {
+  guardian?: Guardian | null
+  enrollment?: (StudentEnrollment & {
     session_class_section?: {
       id: string
-      class?: { id: string; name: string }
-      section?: { id: string; name: string }
+      class?: { id: string; name: string } | null
+      section?: { id: string; name: string } | null
     }
-  }
-  school?: { id: string; name: string }
+  }) | null
+  school?: { id: string; name: string } | null
 }
 
 export interface CreateStudentData {
@@ -89,11 +100,15 @@ export async function getStudents(filters?: StudentFilters): Promise<StudentWith
   }
 
   // Transform the data to match our interface
-  return (data || []).map((student: any) => ({
+  return ((data || []) as StudentQueryRow[]).map((student) => ({
     ...student,
     enrollment: student.student_enrollments?.[0] ? {
       ...student.student_enrollments[0],
-      session_class_section: student.student_enrollments[0]?.session_class_sections,
+      session_class_section: student.student_enrollments[0]?.session_class_sections ? {
+        id: student.student_enrollments[0].session_class_sections.id,
+        class: student.student_enrollments[0].session_class_sections.classes ?? null,
+        section: student.student_enrollments[0].session_class_sections.sections ?? null,
+      } : undefined,
     } : null,
   }))
 }

@@ -6,8 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { getUserProfile } from '@/lib/profileService'
 import { AuthService } from '@/lib/authService'
 import { AuthorizationService } from '@/lib/authorizationService'
-import type { AuthUser, RoleType, Resource, Action } from '@/types/rbac'
-import { UserProfile } from '@/types'
+import type { AuthUser, RoleType, Resource, Action, UserProfile } from '@/types/rbac'
 
 interface AuthContextType {
   // Basic auth
@@ -240,7 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     authUser,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && profile?.is_active !== false,
     error,
     hasRole,
     hasAnyRole,

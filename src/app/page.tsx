@@ -79,7 +79,7 @@ export default function Home() {
             <div className="hidden lg:block relative">
               <div className="relative h-[400px] w-full">
                 <Image
-                  src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=80"
+                  src="/studentclass.png"
                   alt="Students in classroom"
                   fill
                   className="object-cover rounded-2xl shadow-2xl"

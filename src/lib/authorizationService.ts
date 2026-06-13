@@ -284,7 +284,7 @@ if (this.hasAnyRole(user, ['teacher', 'classteacher'])) {
 
     // Fetch from database
     const { data, error } = await supabase
-      .from('user_roles')
+      .from('roles')
       .select('role:roles(*)')
       .eq('user_id', userId)
       .eq('is_active', true);

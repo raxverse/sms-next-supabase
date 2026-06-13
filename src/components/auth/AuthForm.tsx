@@ -1,7 +1,6 @@
 // components/AuthForm.tsx
 'use client'
 
-import Link from 'next/link'
 import { useAuthLogic } from '@/hooks/useAuthLogic'
 
 export default function AuthForm() {
@@ -12,8 +11,8 @@ export default function AuthForm() {
     lastname, setLastname,
     mobile, setMobile,
     role, setRole, user,
-    statusMessage, setStatusMessage,
-    errorMessage, setErrorMessage,
+    statusMessage,
+    errorMessage,
     lastEmail,
     mode, setMode,
     handleSignup, handleLogin, handleLogout
@@ -114,10 +113,10 @@ export default function AuthForm() {
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                 >
-                  <option value="School Admin">School Admin</option>
-                  <option value="Teacher">Teacher</option>
-                  <option value="Parent">Parent</option>
-                  <option value="Student">Student</option>
+                  <option value="schooladmin">School Admin</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="parent">Parent</option>
+                  <option value="student">Student</option>
                 </select>
               </div>
 

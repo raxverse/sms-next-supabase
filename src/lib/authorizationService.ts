@@ -1,384 +1,118 @@
-// Authorization Service - Permission checking and role validation
-// Handles all authorization logic for the application
+import { supabase } from './supabaseClient'
+import { permissionCache } from './permissionCache'
+import type { AuthUser, Role, Permission, RoleType, Resource, Action, PermissionCheckResult, School, UserProfile } from '@/types/rbac'
 
-import { supabase } from './supabaseClient';
-import { permissionCache } from './permissionCache';
-import type {
-  AuthUser,
-  Role,
-  Permission,
-  RoleType,
-  Resource,
-  Action,
-  PermissionCheckResult,
-  School,
-} from '@/types/rbac';
+const ROLE_PERMISSIONS: Record<RoleType, Array<[Resource, Action]>> = {
+  superadmin: [],
+  schooladmin: [
+    ['schools', 'read'], ['schools', 'update'], ['users', 'create'], ['users', 'read'], ['users', 'update'], ['users', 'list'], ['user_roles', 'assign'],
+    ['students', 'create'], ['students', 'read'], ['students', 'update'], ['students', 'list'], ['students', 'enroll'],
+    ['fee_records', 'read'], ['fee_records', 'create'], ['fee_records', 'update'], ['fee_payments', 'create'], ['fee_payments', 'read'], ['fee_payments', 'update'],
+    ['exams', 'create'], ['exams', 'read'], ['exams', 'update'], ['classes', 'create'], ['classes', 'read'], ['classes', 'update'],
+    ['class_assignments', 'create'], ['class_assignments', 'read'], ['class_assignments', 'update'], ['reports', 'read'], ['reports', 'export'], ['attendance', 'read'], ['settings', 'read'], ['settings', 'update'],
+  ],
+  principal: [['schools', 'read'], ['users', 'list'], ['students', 'list'], ['reports', 'read'], ['attendance', 'read']],
+  teacher: [['students', 'read'], ['exam_marks', 'create'], ['exam_marks', 'read'], ['exam_marks', 'update'], ['classes', 'read'], ['class_assignments', 'read'], ['assignments', 'create'], ['assignments', 'read'], ['attendance', 'read']],
+  classteacher: [['students', 'read'], ['students', 'update'], ['exam_marks', 'create'], ['exam_marks', 'read'], ['exam_marks', 'update'], ['classes', 'read'], ['class_assignments', 'read'], ['attendance', 'read']],
+  student: [['students', 'read'], ['fee_records', 'read'], ['fee_payments', 'read'], ['exam_marks', 'read'], ['results', 'read'], ['attendance', 'read']],
+  parent: [['students', 'read'], ['fee_records', 'read'], ['fee_payments', 'read'], ['exam_marks', 'read'], ['results', 'read'], ['attendance', 'read']],
+  accountant: [['fee_records', 'read'], ['fee_records', 'create'], ['fee_records', 'update'], ['fee_payments', 'create'], ['fee_payments', 'read'], ['fee_payments', 'update'], ['reports', 'read']],
+  librarian: [['students', 'read'], ['reports', 'read']],
+  deo: [['students', 'create'], ['students', 'read'], ['students', 'update'], ['students', 'list']],
+  clerk: [['students', 'read'], ['students', 'list'], ['fee_records', 'read']],
+}
+
+const ROLE_DISPLAY_NAMES: Record<RoleType, string> = {
+  superadmin: 'Super Administrator', schooladmin: 'School Administrator', principal: 'Principal', teacher: 'Teacher', classteacher: 'Class Teacher', student: 'Student', parent: 'Parent', accountant: 'Accountant', librarian: 'Librarian', deo: 'Data Entry Operator', clerk: 'Clerk',
+}
+
+function normalizeRoleName(value: string | null | undefined): RoleType | null {
+  if (!value) return null
+  const normalized = value.toLowerCase().replace(/[_\s-]/g, '')
+  const aliases: Record<string, RoleType> = { superadmin: 'superadmin', schooladmin: 'schooladmin', principal: 'principal', teacher: 'teacher', classteacher: 'classteacher', student: 'student', parent: 'parent', accountant: 'accountant', librarian: 'librarian', deo: 'deo', clerk: 'clerk' }
+  return aliases[normalized] ?? null
+}
+
+function toPermission(resource: Resource, action: Action): Permission {
+  return { id: `${resource}:${action}`, resource, action, description: `${action} ${resource}`, category: 'system_settings', created_at: null }
+}
 
 export class AuthorizationService {
-  /**
-   * Check if user has a specific role
-   */
-  static hasRole(user: AuthUser | null, role: RoleType): boolean {
-    if (!user) return false;
-    return user.roles.includes(role);
+  static hasRole(user: AuthUser | null, role: RoleType): boolean { return !!user && user.roles.includes(role) }
+  static hasAnyRole(user: AuthUser | null, roles: RoleType[]): boolean { return !!user && roles.some((role) => user.roles.includes(role)) }
+  static hasAllRoles(user: AuthUser | null, roles: RoleType[]): boolean { return !!user && roles.every((role) => user.roles.includes(role)) }
+  static hasPermission(user: AuthUser | null, resource: Resource, action: Action): boolean { return !!user && user.permissions.includes(`${resource}:${action}`) }
+  static hasAnyPermission(user: AuthUser | null, permissions: string[]): boolean { return !!user && permissions.some((perm) => user.permissions.includes(perm)) }
+  static hasAllPermissions(user: AuthUser | null, permissions: string[]): boolean { return !!user && permissions.every((perm) => user.permissions.includes(perm)) }
+  static canAccessSchool(user: AuthUser | null, schoolId: string): boolean { return !!user && (this.hasRole(user, 'superadmin') || user.school_id === schoolId) }
+
+  static async canAccessStudent(user: AuthUser | null, studentId: string): Promise<boolean> {
+    if (!user) return false
+    if (this.hasRole(user, 'superadmin')) return true
+    const { data: student } = await supabase.from('students').select('id, school_id, guardian_id').eq('id', studentId).maybeSingle()
+    if (!student) return false
+    if (this.hasAnyRole(user, ['schooladmin', 'principal', 'teacher', 'classteacher'])) return student.school_id === user.school_id
+    if (this.hasRole(user, 'parent')) return student.guardian_id === user.id && student.school_id === user.school_id
+    return this.hasRole(user, 'student') && student.id === user.id
   }
 
-  /**
-   * Check if user has any of the specified roles
-   */
-  static hasAnyRole(user: AuthUser | null, roles: RoleType[]): boolean {
-    if (!user) return false;
-    return roles.some((role) => user.roles.includes(role));
-  }
+  static async canModifyStudent(user: AuthUser | null, studentId: string): Promise<boolean> { return this.hasAnyRole(user, ['superadmin', 'schooladmin']) && this.canAccessStudent(user, studentId) }
+  static async canViewFeeRecords(user: AuthUser | null, studentId: string): Promise<boolean> { return this.hasPermission(user, 'fee_records', 'read') && (await this.canAccessStudent(user, studentId)) }
+  static async canEnterMarks(user: AuthUser | null): Promise<boolean> { return this.hasAnyRole(user, ['teacher', 'classteacher']) && this.hasPermission(user, 'exam_marks', 'create') }
 
-  /**
-   * Check if user has all of the specified roles
-   */
-  static hasAllRoles(user: AuthUser | null, roles: RoleType[]): boolean {
-    if (!user) return false;
-    return roles.every((role) => user.roles.includes(role));
-  }
-
-  /**
-   * Check if user has specific permission (resource:action)
-   */
-  static hasPermission(user: AuthUser | null, resource: Resource, action: Action): boolean {
-    if (!user) return false;
-
-    const permissionString = `${resource}:${action}`;
-    return user.permissions.includes(permissionString);
-  }
-
-  /**
-   * Check if user has any of the specified permissions
-   */
-  static hasAnyPermission(user: AuthUser | null, permissions: string[]): boolean {
-    if (!user) return false;
-    return permissions.some((perm) => user.permissions.includes(perm));
-  }
-
-  /**
-   * Check if user has all of the specified permissions
-   */
-  static hasAllPermissions(user: AuthUser | null, permissions: string[]): boolean {
-    if (!user) return false;
-    return permissions.every((perm) => user.permissions.includes(perm));
-  }
-
-  /**
-   * Check if user can access a specific school
-   * Superadmins can access any school
-   * Other roles can only access their school
-   */
-  static canAccessSchool(user: AuthUser | null, schoolId: string): boolean {
-    if (!user) return false;
-
-    // Superadmin can access all schools
-    if (this.hasRole(user, 'superadmin')) return true;
-
-    // Other users can only access their school
-    return user.school_id === schoolId;
-  }
-
-  /**
-   * Check if user can access a student's records
-   * Based on role and relationships
-   */
-  static async canAccessStudent(user: AuthUser | null, studentId: number): Promise<boolean> {
-    if (!user) return false;
-
-    // Superadmin can access any student
-    if (this.hasRole(user, 'superadmin')) return true;
-
-    // School admin can access students in their school
-    if (this.hasRole(user, 'schooladmin')) {
-      const { data: student, error } = await supabase
-        .from('students')
-        .select('school_id')
-        .eq('id', studentId)
-        .single();
-
-      if (error || !student) return false;
-      return student.school_id === user.school_id;
-    }
-
-    // Students can access their own record
-    if (this.hasRole(user, 'student')) {
-      // Student ID in auth context matches the student ID
-      // This would need to be stored in user profile
-      return true; // RLS policy will enforce this
-    }
-
-    // Parents can access wards
-    if (this.hasRole(user, 'parent')) {
-      const { data: relationship, error } = await supabase
-        .from('parent_student_relationships')
-        .select('id')
-        .eq('parent_id', user.id)
-        .eq('student_id', studentId)
-        .single();
-
-      return !error && !!relationship;
-    }
-
-    // Teachers can access students in their classes
-if (this.hasAnyRole(user, ['teacher', 'classteacher'])) {
-  
-  // Step 1: Pehle pata karo ki Student kis class/section mein padhta hai
-  const { data: enrollment, error: enrollError } = await supabase
-    .from('student_enrollments')
-    .select('session_class_section_id')
-    .eq('student_id', studentId)
-    .eq('is_active', true) // Hamesha active enrollment check karein
-    .maybeSingle();
-
-  if (enrollError || !enrollment) return false;
-
-  // Step 2: Check karo ki kya yeh Teacher us class/section ko padhata hai?
-  const { data: assignment, error: assignError } = await supabase
-    .from('teacher_class_assignments')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('session_class_section_id', enrollment.session_class_section_id)
-    .maybeSingle();
-
-  // Agar assignment mil gaya, matlab teacher padhata hai (true return hoga)
-  return !assignError && !!assignment;
-}
-
-    return false;
-  }
-
-  /**
-   * Check if user can modify a student's records
-   */
-  static async canModifyStudent(user: AuthUser | null, studentId: number): Promise<boolean> {
-    if (!user) return false;
-
-    // Only superadmin and school admin can modify students
-    if (!this.hasAnyRole(user, ['superadmin', 'schooladmin'])) return false;
-
-    // For school admin, verify it's their school
-    if (this.hasRole(user, 'schooladmin')) {
-      return this.canAccessStudent(user, studentId);
-    }
-
-    return true;
-  }
-
-  /**
-   * Check if user can view fee records
-   */
-  static async canViewFeeRecords(user: AuthUser | null, studentId: number): Promise<boolean> {
-    if (!user) return false;
-
-    // Can view if has permission and can access student
-    return (
-      this.hasPermission(user, 'fee_records', 'read') && (await this.canAccessStudent(user, studentId))
-    );
-  }
-
-  /**
-   * Check if user can enter marks for an exam
-   */
-  static async canEnterMarks(user: AuthUser | null, examScheduleId: number): Promise<boolean> {
-    if (!user) return false;
-
-    // Only teachers can enter marks
-    if (!this.hasAnyRole(user, ['teacher', 'classteacher'])) return false;
-
-    // Verify they teach the subject for this exam
-    const { data: schedule, error: scheduleError } = await supabase
-      .from('exam_schedules')
-      .select('class_id, subject_id')
-      .eq('id', examScheduleId)
-      .single();
-
-    if (scheduleError || !schedule) return false;
-
-    const { data: assignment, error: assignmentError } = await supabase
-      .from('teacher_class_assignments')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('subject_id', schedule.subject_id)
-      .single();
-
-    return !assignmentError && !!assignment;
-  }
-
-  /**
-   * Get all capabilities for a user based on their roles
-   */
   static getCapabilities(user: AuthUser | null) {
-    if (!user) {
-      return {
-        canManageSchools: false,
-        canManageUsers: false,
-        canManageStudents: false,
-        canViewFees: false,
-        canManageFees: false,
-        canEnterMarks: false,
-        canViewMarks: false,
-        canViewReports: false,
-        canExportData: false,
-        canViewAuditLogs: false,
-      };
-    }
-
-    const isSuperAdmin = this.hasRole(user, 'superadmin');
-    const isSchoolAdmin = this.hasRole(user, 'schooladmin');
-    const isTeacher = this.hasAnyRole(user, ['teacher', 'classteacher']);
-    const isStudent = this.hasRole(user, 'student');
-    const isParent = this.hasRole(user, 'parent');
-
-    return {
-      canManageSchools: isSuperAdmin,
-      canManageUsers: isSuperAdmin || isSchoolAdmin,
-      canManageStudents: isSuperAdmin || isSchoolAdmin,
-      canViewFees: isSuperAdmin || isSchoolAdmin || isStudent || isParent,
-      canManageFees: isSuperAdmin || isSchoolAdmin,
-      canEnterMarks: isTeacher,
-      canViewMarks: isTeacher || isStudent || isParent,
-      canViewReports: isSuperAdmin || isSchoolAdmin || isTeacher || isStudent || isParent,
-      canExportData: isSuperAdmin || isSchoolAdmin,
-      canViewAuditLogs: isSuperAdmin || isSchoolAdmin,
-    };
+    const isSuperAdmin = this.hasRole(user, 'superadmin')
+    const isSchoolAdmin = this.hasRole(user, 'schooladmin')
+    const isTeacher = this.hasAnyRole(user, ['teacher', 'classteacher'])
+    const isStudent = this.hasRole(user, 'student')
+    const isParent = this.hasRole(user, 'parent')
+    return { canManageSchools: isSuperAdmin, canManageUsers: isSuperAdmin || isSchoolAdmin, canManageStudents: isSuperAdmin || isSchoolAdmin, canViewFees: isSuperAdmin || isSchoolAdmin || isStudent || isParent, canManageFees: isSuperAdmin || isSchoolAdmin, canEnterMarks: isTeacher, canViewMarks: isTeacher || isStudent || isParent, canViewReports: isSuperAdmin || isSchoolAdmin || isTeacher || isStudent || isParent, canExportData: isSuperAdmin || isSchoolAdmin, canViewAuditLogs: isSuperAdmin || isSchoolAdmin }
   }
 
-  /**
-   * Fetch and cache user permissions from database
-   */
-  static async fetchUserPermissions(userId: string): Promise<Permission[]> {
-    // Check cache first
-    const cached = permissionCache.getUserPermissions(userId);
-    if (cached) return cached;
-
-    // Fetch from database
-    const { data, error } = await supabase.rpc('get_user_permissions', {
-      user_uuid: userId,
-    });
-
-    if (error || !data) {
-      console.error('Error fetching permissions:', error);
-      return [];
-    }
-
-    // Format the response and cache it
-    const permissions = data.map((p: any) => ({
-      resource: p.resource,
-      action: p.action,
-      id: p.permission_id,
-    }));
-
-    permissionCache.cacheUserPermissions(userId, permissions);
-    return permissions;
-  }
-
-  /**
-   * Fetch and cache user roles from database
-   */
   static async fetchUserRoles(userId: string): Promise<Role[]> {
-    // Check cache first
-    const cached = permissionCache.getUserRoles(userId);
-    if (cached) return cached;
-
-    // Fetch from database
-    const { data, error } = await supabase
-      .from('roles')
-      .select('role:roles(*)')
-      .eq('user_id', userId)
-      .eq('is_active', true);
-
-    if (error || !data) {
-      console.error('Error fetching roles:', error);
-      return [];
-    }
-
-    const roles = data.map((ur: any) => ur.role).filter(Boolean);
-    permissionCache.cacheUserRoles(userId, roles);
-    return roles;
+    const cached = permissionCache.getUserRoles(userId)
+    if (cached) return cached
+    const { data, error } = await supabase.from('profiles').select('roles(id, role_name, description, created_at)').eq('id', userId).maybeSingle()
+    if (error || !data?.roles) return []
+    const rawRole = Array.isArray(data.roles) ? data.roles[0] : data.roles
+    const roleName = normalizeRoleName(rawRole.role_name)
+    if (!roleName) return []
+    const role: Role = { id: rawRole.id, role_name: roleName, name: roleName, description: rawRole.description, display_name: ROLE_DISPLAY_NAMES[roleName], is_system_role: true, created_at: rawRole.created_at }
+    permissionCache.cacheUserRoles(userId, [role])
+    return [role]
   }
 
-  /**
-   * Get school info for user
-   */
-static async getUserSchool(userId: string): Promise<School | null> {
-    const { data, error } = await supabase
-      .from('schools')
-      // !inner ka matlab hai: Wahi school do jiska profile se link ho
-      .select('*, profiles!inner(id)') 
-      .eq('profiles.id', userId)
-      .single();
-
-    if (error || !data) return null;
-
-    // Yahan TypeScript bilkul rotega nahi kyunki main query 'schools' table ki hi hai!
-    return data as School; 
-}
-
-  /**
-   * Build complete auth user with all RBAC context
-   */
-  static async buildAuthUser(userProfile: any): Promise<AuthUser> {
-    const userId = userProfile.id;
-
-    // Fetch roles and permissions in parallel
-    const [roles, permissions, school] = await Promise.all([
-      this.fetchUserRoles(userId),
-      this.fetchUserPermissions(userId),
-      this.getUserSchool(userId),
-    ]);
-
-    const roleNames = roles.map((r) => r.name);
-    const permissionStrings = permissions.map((p) => `${p.resource}:${p.action}`);
-
-    return {
-      ...userProfile,
-      roles: roleNames,
-      roleDetails: roles,
-      permissions: permissionStrings,
-      permissionDetails: permissions,
-      school: school,
-      isSuperAdmin: roleNames.includes('superadmin'),
-      isSchoolAdmin: roleNames.includes('schooladmin'),
-      isTeacher: roleNames.includes('teacher'),
-      isClassTeacher: roleNames.includes('classteacher'),
-      isStudent: roleNames.includes('student'),
-      isParent: roleNames.includes('parent'),
-    };
+  static async fetchUserPermissions(userId: string): Promise<Permission[]> {
+    const cached = permissionCache.getUserPermissions(userId)
+    if (cached) return cached
+    const roles = await this.fetchUserRoles(userId)
+    const roleNames = roles.map((role) => role.name)
+    const pairs = roleNames.includes('superadmin')
+      ? Array.from(new Set(Object.values(ROLE_PERMISSIONS).flat().map(([r, a]) => `${r}:${a}`))).map((p) => p.split(':') as [Resource, Action])
+      : roleNames.flatMap((role) => ROLE_PERMISSIONS[role] ?? [])
+    const permissions = Array.from(new Map(pairs.map(([resource, action]) => [`${resource}:${action}`, toPermission(resource, action)])).values())
+    permissionCache.cacheUserPermissions(userId, permissions)
+    return permissions
   }
 
-  /**
-   * Check if a permission exists or deny with reason
-   */
-  static checkPermission(
-    user: AuthUser | null,
-    resource: Resource,
-    action: Action
-  ): PermissionCheckResult {
-    if (!user) {
-      return {
-        allowed: false,
-        reason: 'User not authenticated',
-      };
-    }
-
-    if (!this.hasPermission(user, resource, action)) {
-      return {
-        allowed: false,
-        reason: `User does not have permission to ${action} ${resource}`,
-      };
-    }
-
-    return {
-      allowed: true,
-    };
+  static async getUserSchool(userId: string): Promise<School | null> {
+    const { data: profile } = await supabase.from('profiles').select('school_id').eq('id', userId).maybeSingle()
+    if (!profile?.school_id) return null
+    const { data: school, error } = await supabase.from('schools').select('*').eq('id', profile.school_id).maybeSingle()
+    return error ? null : school
   }
 
-  /**
-   * Invalidate user's permission cache when roles change
-   */
-  static invalidateUserCache(userId: string): void {
-    permissionCache.invalidateUserCache(userId);
+  static async buildAuthUser(userProfile: UserProfile): Promise<AuthUser> {
+    const [roles, permissions, school] = await Promise.all([this.fetchUserRoles(userProfile.id), this.fetchUserPermissions(userProfile.id), this.getUserSchool(userProfile.id)])
+    const roleNames = roles.map((role) => role.name)
+    return { ...userProfile, roles: roleNames, roleDetails: roles, permissions: permissions.map((p) => `${p.resource}:${p.action}`), permissionDetails: permissions, school, isSuperAdmin: roleNames.includes('superadmin'), isSchoolAdmin: roleNames.includes('schooladmin'), isTeacher: roleNames.includes('teacher'), isClassTeacher: roleNames.includes('classteacher'), isStudent: roleNames.includes('student'), isParent: roleNames.includes('parent') }
   }
+
+  static checkPermission(user: AuthUser | null, resource: Resource, action: Action): PermissionCheckResult {
+    if (!user) return { allowed: false, reason: 'User not authenticated' }
+    if (!this.hasPermission(user, resource, action)) return { allowed: false, reason: `User does not have permission to ${action} ${resource}` }
+    return { allowed: true }
+  }
+
+  static invalidateUserCache(userId: string): void { permissionCache.invalidateUserCache(userId) }
 }

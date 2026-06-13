@@ -1,11 +1,19 @@
-// RBAC Type Definitions for School Management System
-// Comprehensive types for role-based access control and multi-tenancy
-
 // ============================================================================
 // ROLE TYPES
 // ============================================================================
 
-export type RoleType = 'superadmin' | 'schooladmin' | 'teacher' | 'classteacher' | 'student' | 'parent';
+export type RoleType = 
+  | 'superadmin'
+  | 'schooladmin'
+  | 'principal'
+  | 'teacher'
+  | 'classteacher'
+  | 'student'
+  | 'parent'
+  | 'accountant'
+  | 'librarian'
+  | 'deo'
+  | 'clerk'
 
 export interface Role {
   id: string;

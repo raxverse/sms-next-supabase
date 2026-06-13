@@ -83,7 +83,7 @@ export const GET = apiRouteAdminOnly(async (request, user) => {
     }
 
     // Build query
-    let query = supabase.from('user_profiles').select('id, email, first_name, last_name, is_active, created_at')
+    let query = supabase.from('profiles').select('id, email, first_name, last_name, is_active, created_at')
 
     // Filter by school if not superadmin
     if (schoolId && !user.isSuperAdmin) {
@@ -131,7 +131,7 @@ export async function updateUserRoles(request: NextRequest, { params }: { params
     // Verify user can modify this user (same school)
     if (!user.isSuperAdmin) {
       const { data: targetUser, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('school_id')
         .eq('id', userId)
         .single()
@@ -174,7 +174,7 @@ export async function deleteUser(request: NextRequest, { params }: { params: { i
     // Verify user can modify this user
     if (!user.isSuperAdmin) {
       const { data: targetUser, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('school_id')
         .eq('id', userId)
         .single()

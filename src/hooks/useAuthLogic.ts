@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import type { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
 export function useAuthLogic() {
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
   const [mobile, setMobile] = useState('')
-  const [role, setRole] = useState('Parent')
+  const [role, setRole] = useState('parent')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [statusMessage, setStatusMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [lastEmail, setLastEmail] = useState('')
@@ -69,7 +70,7 @@ export function useAuthLogic() {
             first_name: firstname?.trim() || 'User',
             last_name: lastname?.trim() || 'User',
             mobile: mobile?.trim() || '',
-            role: role || 'Parent'
+            role: role || 'parent'
           }
         }
       })
@@ -155,7 +156,7 @@ export function useAuthLogic() {
 
       setUser(null)
       setStatusMessage(`Logged out from ${previousEmail}`)
-      setLastEmail(previousEmail)
+      setLastEmail(previousEmail ?? '')
     } catch (unexpected) {
       console.error('Unexpected logout error:', unexpected)
       setErrorMessage('An unexpected error occurred during logout. Please try again.')

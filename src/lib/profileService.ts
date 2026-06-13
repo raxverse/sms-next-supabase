@@ -1,14 +1,16 @@
 import { supabase } from './supabaseClient'
-import { UserProfile } from '@/types'
+import type { Tables, TablesUpdate, TablesInsert } from '@/types/database'
 
-export type { UserProfile }
+export type UserProfile = Tables<'profiles'>
+export type UserProfileUpdate = TablesUpdate<'profiles'>
+export type UserProfileInsert = TablesInsert<'profiles'>
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
 
   if (error) {
     console.error('Error fetching profile:', error)
@@ -18,32 +20,42 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   return data
 }
 
-export async function updateUserProfile(userId: string, updates: Partial<UserProfile>) {
+export async function updateUserProfile(userId: string, updates: UserProfileUpdate): Promise<UserProfile> {
+  const safeUpdates: UserProfileUpdate = {
+    ...updates,
+    id: undefined,
+    email: undefined,
+    updated_at: new Date().toISOString(),
+  }
+
   const { data, error } = await supabase
     .from('profiles')
-    .update(updates)
+    .update(safeUpdates)
     .eq('id', userId)
-    .select()
+    .select('*')
     .single()
 
-    if (error) {
-      console.error('Error updating profile:', error)
-      throw error
-    }
+  if (error) {
+    console.error('Error updating profile:', error)
+    throw error
+  }
+
   return data
 }
 
-export async function createUserProfile(userId: string, email: string, profile?: Partial<UserProfile>) {
+export async function createUserProfile(userId: string, email: string, profile?: Partial<UserProfileInsert>): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('profiles')
-    .insert([
-      {
-        id: userId,
-        email,
-        ...profile,
-      },
-    ])
-    .select()
+    .insert({
+      id: userId,
+      email,
+      first_name: profile?.first_name || 'User',
+      last_name: profile?.last_name ?? null,
+      role_id: profile?.role_id ?? null,
+      school_id: profile?.school_id ?? null,
+      is_active: profile?.is_active ?? true,
+    })
+    .select('*')
     .single()
 
   if (error) {

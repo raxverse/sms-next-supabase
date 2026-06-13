@@ -13,9 +13,12 @@ import {
   getSchoolContext,
 } from '@/lib/apiProtection'
 import { AuthService } from '@/lib/authService'
-import { AuthorizationService } from '@/lib/authorizationService'
 import { supabase } from '@/lib/supabaseClient'
 import type { RoleType } from '@/types/rbac'
+
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback
+}
 
 /**
  * POST /api/admin/users
@@ -56,7 +59,7 @@ export const POST = apiRouteAdminOnly(async (request, user) => {
     )
 
     if (error || !newUser) {
-      return badRequest(error?.message || 'Failed to create user')
+      return badRequest(errorMessage(error, 'Failed to create user'))
     }
 
     return success({ user: newUser }, 201)
@@ -93,7 +96,7 @@ export const GET = apiRouteAdminOnly(async (request, user) => {
     const { data: profiles, error } = await query
 
     if (error) {
-      return badRequest(error.message)
+      return badRequest(errorMessage(error, 'Request failed'))
     }
 
     return success({ users: profiles || [] })
@@ -149,7 +152,7 @@ export async function updateUserRoles(request: NextRequest, { params }: { params
     const { error } = await AuthService.updateUserRoles(userId, body.roles as RoleType[], schoolId || undefined)
 
     if (error) {
-      return badRequest(error.message)
+      return badRequest(errorMessage(error, 'Request failed'))
     }
 
     return success({ message: 'User roles updated' })
@@ -192,7 +195,7 @@ export async function deleteUser(request: NextRequest, { params }: { params: { i
     const { error } = await AuthService.deactivateUser(userId)
 
     if (error) {
-      return badRequest(error.message)
+      return badRequest(errorMessage(error, 'Request failed'))
     }
 
     return success({ message: 'User deactivated' })
@@ -218,7 +221,7 @@ export async function updateUser(request: NextRequest, { params }: { params: { i
     // Verify user can modify this user
     if (!user.isSuperAdmin) {
       const { data: targetUser, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('school_id')
         .eq('id', userId)
         .single()
@@ -236,7 +239,7 @@ export async function updateUser(request: NextRequest, { params }: { params: { i
     const { error } = await AuthService.updateUserProfile(userId, body)
 
     if (error) {
-      return badRequest(error.message)
+      return badRequest(errorMessage(error, 'Request failed'))
     }
 
     return success({ message: 'User updated' })
